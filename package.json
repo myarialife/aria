@@ -1,0 +1,28 @@
+{
+  "name": "aria-token",
+  "version": "0.1.0",
+  "description": "ARIA Token - Decentralized AI Personal Assistant on Solana",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "node scripts/deploy.js",
+    "test": "jest"
+  },
+  "keywords": [
+    "solana",
+    "blockchain",
+    "token",
+    "AI",
+    "pump.fun"
+  ],
+  "author": "ARIA Team",
+  "license": "MIT",
+  "dependencies": {
+    "@solana/spl-token": "^0.3.8",
+    "@solana/web3.js": "^1.78.0",
+    "borsh": "^0.7.0",
+    "bs58": "^5.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0"
+  }
+} 

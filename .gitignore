@@ -1,0 +1,33 @@
+# Rust build artifacts
+/target
+**/*.rs.bk
+Cargo.lock
+
+# Node.js dependencies
+/node_modules
+package-lock.json
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Solana keypairs and private keys
+/keys/*.json
+
+# Environment variables
+.env
+.env.local
+
+# Build output
+/dist
+/build
+
+# Logs
+*.log
+npm-debug.log*
+
+# Operating system files
+.DS_Store
+Thumbs.db 
