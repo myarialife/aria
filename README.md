@@ -18,6 +18,62 @@ ARIA is a decentralized AI personal assistant that leverages the open data ecosy
 
 ARIA Token is currently in its foundational development phase. The core token contract has been implemented on Solana, with comprehensive functionality for token management, distribution, and security. The Android application framework is under active development, with data collection and core AI capabilities as the primary focus.
 
+## Project Timeline & Progress
+
+### Overall Timeline (2023-2025)
+
+```
+2023 Q4           2024 Q1           2024 Q2           2024 Q3           2024 Q4           2025 Q1
+|----------------|----------------|----------------|----------------|----------------|----------------|
+[   Phase 1:    ][      Phase 2:                  ][      Phase 3:                  ][Phase 4: ...
+  Basic Assistant  Information Management           Complex Integration
+  & Data Framework & Social Features                Capabilities
+]                [                                ][                                ][
+```
+
+### Detailed Project Progress
+
+| Component               | Status        | Progress | Target Completion |
+|-------------------------|---------------|----------|-------------------|
+| Token Contract          | Completed     | 100%     | 2023 Q4           |
+| Security Framework      | Completed     | 100%     | 2023 Q4           |
+| Token Economy Features  | Completed     | 100%     | 2023 Q4           |
+| Android Data Collection | In Progress   | 45%      | 2024 Q1           |
+| AI Core Implementation  | In Progress   | 30%      | 2024 Q1           |
+| UI/UX Development       | Planning      | 15%      | 2024 Q2           |
+| Blockchain Integration  | In Progress   | 60%      | 2024 Q1           |
+| Third-party APIs        | Planning      | 10%      | 2024 Q2           |
+| Testnet Deployment      | Not Started   | 0%       | 2024 Q1           |
+| Mainnet Launch          | Not Started   | 0%       | 2024 Q2           |
+
+### Project Swimlane Diagram
+
+```
+┌──────────────┬──────────────────┬──────────────────┬──────────────────┬──────────────────┐
+│              │     Q4 2023      │     Q1 2024      │     Q2 2024      │     Q3 2024      │
+├──────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┤
+│ Blockchain   │ ██████████████   │ ████████████     │ ██████████       │ ████████         │
+│ Development  │ Token Contract   │ Testnet Deploy   │ Mainnet Launch   │ Token Utility    │
+│              │ Implementation   │ & Testing        │ & Distribution   │ Expansion        │
+├──────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┤
+│ Mobile App   │ ████████         │ ██████████████   │ ██████████████   │ ██████████████   │
+│ Development  │ Architecture     │ Core Framework   │ UI Development   │ Feature          │
+│              │ Design           │ Implementation   │ & Testing        │ Expansion        │
+├──────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┤
+│ AI           │ ██████           │ ████████████     │ ██████████████   │ ██████████████   │
+│ Development  │ Initial Models   │ Data Collection  │ Model Training   │ Advanced         │
+│              │ Research         │ & Processing     │ & Deployment     │ Analytics        │
+├──────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┤
+│ Business     │ ████████         │ ██████████       │ ██████████████   │ ██████████████   │
+│ Development  │ Tokenomics       │ Partnership      │ Marketing        │ Community        │
+│              │ Design           │ Development      │ Launch           │ Expansion        │
+├──────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┤
+│ User         │                  │ ████             │ ████████         │ ██████████████   │
+│ Adoption     │                  │ Alpha Testing    │ Beta Release     │ Public Release   │
+│              │                  │                  │                  │ & Growth         │
+└──────────────┴──────────────────┴──────────────────┴──────────────────┴──────────────────┘
+```
+
 ## Technical Architecture
 
 ### System Components Overview
@@ -179,6 +235,151 @@ aria-token/
 │ Token Rewards│◄────│ Blockchain     │◄────────────┘
 └──────────────┘     │ Transactions   │
                      └────────────────┘
+```
+
+## Code Examples
+
+### Token Initialization
+
+```rust
+// From src/lib.rs
+const TOKEN_DECIMALS: u8 = 9;
+const TOTAL_SUPPLY: u64 = 100_000_000_000_000_000; // 100 million tokens with 9 decimals
+
+// 50% for user incentives
+const USER_INCENTIVES: u64 = TOTAL_SUPPLY / 2;
+// 20% for team development
+const TEAM_DEVELOPMENT: u64 = TOTAL_SUPPLY / 5;
+// 20% for community governance
+const COMMUNITY_GOVERNANCE: u64 = TOTAL_SUPPLY / 5;
+// 10% for marketing and partnerships
+const MARKETING_PARTNERSHIPS: u64 = TOTAL_SUPPLY / 10;
+
+pub fn process_instruction(
+    program_id: &Pubkey,
+    accounts: &[AccountInfo],
+    instruction_data: &[u8],
+) -> ProgramResult {
+    let instruction = AriaTokenInstruction::try_from_slice(instruction_data)?;
+    
+    match instruction {
+        AriaTokenInstruction::InitializeToken => {
+            msg!("Instruction: Initialize Token");
+            initialize_token(program_id, accounts)
+        },
+        AriaTokenInstruction::DistributeTokens => {
+            msg!("Instruction: Distribute Tokens");
+            distribute_tokens(program_id, accounts)
+        },
+        // Other instructions...
+    }
+}
+```
+
+### Role-Based Security Implementation
+
+```rust
+// From src/security.rs
+#[derive(BorshSerialize, BorshDeserialize, Debug, PartialEq)]
+pub enum Role {
+    /// Admin with full control
+    Admin,
+    /// Minter can mint new tokens
+    Minter,
+    /// Freezer can freeze accounts
+    Freezer,
+    /// Burner can burn tokens
+    Burner,
+}
+
+impl AuthorityList {
+    pub fn has_role(&self, key: &Pubkey, role: Role) -> bool {
+        // Primary admin always has all roles
+        if key == &self.primary_admin {
+            return true;
+        }
+        
+        // Check if key has the specific role
+        self.authorities.iter().any(|auth| 
+            &auth.key == key && auth.role == role && auth.is_active
+        )
+    }
+}
+```
+
+### Token Locking Mechanism
+
+```rust
+// From src/token_economy.rs
+#[derive(BorshSerialize, BorshDeserialize, Debug)]
+pub struct TokenLock {
+    /// Owner of the locked tokens
+    pub owner: Pubkey,
+    /// Amount of tokens locked
+    pub amount: u64,
+    /// Unix timestamp when tokens can be unlocked
+    pub unlock_time: u64,
+    /// Whether tokens have been claimed after unlock
+    pub is_claimed: bool,
+}
+
+pub fn lock_tokens(
+    program_id: &Pubkey,
+    accounts: &[AccountInfo],
+    amount: u64,
+    lock_duration: u64,
+) -> ProgramResult {
+    // Implementation details...
+    
+    // Get the current clock
+    let clock = Clock::from_account_info(clock_sysvar)?;
+    
+    // Create the lock data
+    let lock_data = TokenLock {
+        owner: *authority.key,
+        amount,
+        unlock_time: clock.unix_timestamp as u64 + lock_duration,
+        is_claimed: false,
+    };
+    
+    // Store lock data and transfer tokens to vault
+    // ...
+    
+    Ok(())
+}
+```
+
+### Mobile App Integration (Planned)
+
+```kotlin
+// Example of planned Android integration code
+class AriaTokenManager(context: Context) {
+    private val solanaClient = SolanaClient("https://api.devnet.solana.com")
+    private val keyPairStore = KeyPairStore(context)
+    
+    suspend fun getUserTokenBalance(): Double {
+        val keyPair = keyPairStore.getOrCreateKeyPair()
+        val accountInfo = solanaClient.getTokenAccountsByOwner(keyPair.publicKey)
+        
+        // Process account info and return balance
+        return accountInfo.firstOrNull { it.mint == ARIA_TOKEN_MINT }?.balance ?: 0.0
+    }
+    
+    suspend fun contributeData(dataPacket: DataContribution): Double {
+        // Validate data
+        if (!dataPacket.validate()) {
+            throw IllegalArgumentException("Invalid data packet")
+        }
+        
+        // Submit data to backend and get reward amount
+        val rewardAmount = ApiService.submitDataContribution(dataPacket)
+        
+        // Request token reward
+        solanaClient.requestTokenReward(keyPairStore.getKeyPair().publicKey, rewardAmount)
+        
+        return rewardAmount
+    }
+}
 ```
 
 ## Token Details
