@@ -20,7 +20,7 @@ ARIA Token is currently in its foundational development phase. The core token co
 
 ## Technical Architecture
 
-### System Components
+### System Components Overview
 
 ```
 ARIA Ecosystem
@@ -38,23 +38,147 @@ ARIA Ecosystem
     └── API Gateway
 ```
 
+### Detailed Technical Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      User Devices                           │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
+│  │  Android App │  │  Web Portal  │  │  Partner Services │  │
+│  └───────┬──────┘  └───────┬──────┘  └─────────┬────────┘  │
+└──────────┼───────────────┬─┼────────────────────┼──────────┘
+           │               │ │                    │
+           ▼               │ │                    ▼
+┌──────────────────┐      │ │      ┌───────────────────────┐
+│   Data Collection│◄─────┘ └─────►│   Third-party API     │
+│   Framework      │               │   Integrations        │
+└────────┬─────────┘               └───────────┬───────────┘
+         │                                     │
+         ▼                                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  Backend Services                           │
+│  ┌──────────────────────────┐  ┌───────────────────────┐   │
+│  │  Data Processing Pipeline │  │  AI Model Training    │   │
+│  │  ┌────────────────┐      │  │  ┌─────────────────┐  │   │
+│  │  │ Data Validation│      │  │  │ Model Training  │  │   │
+│  │  └────────┬───────┘      │  │  └────────┬────────┘  │   │
+│  │           │              │  │           │           │   │
+│  │  ┌────────▼───────┐      │  │  ┌────────▼────────┐  │   │
+│  │  │ Data Enrichment│      │  │  │ Model Evaluation│  │   │
+│  │  └────────┬───────┘      │  │  └────────┬────────┘  │   │
+│  │           │              │  │           │           │   │
+│  │  ┌────────▼───────┐      │  │  ┌────────▼────────┐  │   │
+│  │  │ Data Storage   │      │  │  │ Model Deployment│  │   │
+│  │  └────────────────┘      │  │  └─────────────────┘  │   │
+│  └──────────────────────────┘  └───────────────────────┘   │
+│                                                             │
+│  ┌──────────────────────────┐  ┌───────────────────────┐   │
+│  │  API Gateway             │  │  User Authentication  │   │
+│  └──────────────────────────┘  └───────────────────────┘   │
+└───────────────────────────┬─────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  Blockchain Layer (Solana)                  │
+│                                                             │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │                  ARIA Token Contract                  │  │
+│  │                                                       │  │
+│  │  ┌────────────┐  ┌────────────┐  ┌────────────────┐  │  │
+│  │  │ Token Core │  │ Security   │  │ Token Economy  │  │  │
+│  │  │ Functions  │  │ System     │  │ Features       │  │  │
+│  │  └────────────┘  └────────────┘  └────────────────┘  │  │
+│  │                                                       │  │
+│  │  ┌────────────┐  ┌────────────┐  ┌────────────────┐  │  │
+│  │  │ Metadata   │  │ Events     │  │ Upgrade        │  │  │
+│  │  │ Management │  │ System     │  │ Mechanism      │  │  │
+│  │  └────────────┘  └────────────┘  └────────────────┘  │  │
+│  └──────────────────────────────────────────────────────┘  │
+│                                                             │
+│  ┌─────────────────────┐    ┌───────────────────────────┐  │
+│  │ Data Verification   │    │ Reward Distribution       │  │
+│  │ System              │    │ Mechanism                 │  │
+│  └─────────────────────┘    └───────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+```
+
 ### Token Smart Contract Architecture
 
 ```
 aria-token/
 ├── src/                  # Rust source code
 │   ├── lib.rs            # Main contract implementation
+│   │   ├── Constants     # Token decimals, supply, distribution
+│   │   ├── Entrypoint    # Program entry point
+│   │   └── Instructions  # Main instruction processor
+│   │
 │   ├── error.rs          # Error handling
+│   │   ├── Error Types   # Custom error definitions
+│   │   └── Result Types  # Result wrapper types
+│   │
 │   ├── instruction.rs    # Instruction definitions
+│   │   ├── Initialize    # Token initialization instructions
+│   │   ├── Distribution  # Token distribution instructions
+│   │   └── Management    # Token management instructions
+│   │
 │   ├── metadata.rs       # Token metadata implementation
-│   ├── token_economy.rs  # Token economic features (burn, lock)
-│   ├── security.rs       # Authority and permissions system
+│   │   ├── Metadata      # Name, symbol, URI storage
+│   │   └── Updates       # Metadata update mechanisms
+│   │
+│   ├── token_economy.rs  # Token economic features
+│   │   ├── Burn          # Token burning mechanisms
+│   │   ├── Lock          # Token locking/vesting
+│   │   └── Custom Lock   # Customizable lock durations
+│   │
+│   ├── security.rs       # Authority and permissions
+│   │   ├── Roles         # Role-based access control
+│   │   ├── Authorities   # Authority management
+│   │   └── Verification  # Transaction verification
+│   │
 │   ├── events.rs         # Event logging system
+│   │   ├── Event Types   # Different event definitions
+│   │   └── Logging       # Event logging functions
+│   │
 │   ├── upgradable.rs     # Contract upgrade mechanism
+│   │   ├── Versioning    # Version control system
+│   │   ├── Scheduling    # Upgrade scheduling with delay
+│   │   └── Finalization  # Upgrade finalization and cancellation
+│   │
 │   ├── pump_fun.rs       # pump.fun integration
+│   │   ├── Config        # Platform-specific configuration
+│   │   ├── Pricing       # Token pricing mechanisms
+│   │   └── Limits        # Transaction limits and controls
+│   │
 │   └── test.rs           # Tests
+│       ├── Unit Tests    # Individual function tests
+│       └── Integration   # End-to-end contract tests
+│
 ├── scripts/              # Deployment scripts
+│   └── deploy.js         # Deployment automation
+│
 └── keys/                 # Directory for keypairs
+    └── .gitkeep          # Placeholder for key storage
+```
+
+### Data Flow Architecture
+
+```
+┌──────────────┐     ┌────────────────┐     ┌────────────────┐
+│ User Actions │────►│ Mobile App     │────►│ Backend API    │
+└──────────────┘     └────────────────┘     └───────┬────────┘
+                                                    │
+                     ┌────────────────┐             │
+                     │ Third-party    │◄────────────┘
+                     │ Services       │             │
+                     └────────────────┘             ▼
+                                             ┌────────────────┐
+                                             │ Data Processing│
+                                             └───────┬────────┘
+                                                     │
+┌──────────────┐     ┌────────────────┐             │
+│ Token Rewards│◄────│ Blockchain     │◄────────────┘
+└──────────────┘     │ Transactions   │
+                     └────────────────┘
 ```
 
 ## Token Details
