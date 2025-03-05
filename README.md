@@ -1,5 +1,9 @@
 # ARIA Token (ARI)
 
+<p align="center">
+  <img src="assets/aria-logo.svg" alt="ARIA Logo" width="250" height="200">
+</p>
+
 ARIA Token is a Solana-based cryptocurrency for the ARIA decentralized AI personal assistant ecosystem.
 
 ## Project Overview
