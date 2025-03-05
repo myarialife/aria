@@ -4,7 +4,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!-- 数据收集所需权限 -->
+    <!-- Permissions required for data collection -->
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
@@ -34,7 +34,7 @@
         <activity android:name=".ui.auth.RegisterActivity" />
         <activity android:name=".ui.auth.WalletSetupActivity" />
         
-        <!-- 数据服务 -->
+        <!-- Data Service -->
         <service
             android:name=".data.DataCollectionService"
             android:enabled="true"

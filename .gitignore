@@ -1,11 +1,11 @@
-# 操作系统文件
+# Operating System Files
 .DS_Store
 Thumbs.db
 .directory
 *.swp
 *.swo
 
-# 编辑器配置
+# Editor Configurations
 .idea/
 .vscode/
 *.sublime-project
@@ -42,7 +42,7 @@ aria-token/target/
 aria-token/Cargo.lock
 **/*.rs.bk
 
-# 私钥和安全文件
+# Private Keys and Security Files
 keys/
 **/*.keypair
 **/*.pem
@@ -51,7 +51,7 @@ keys/
 **/*.jks
 **/*.keystore
 
-# 环境变量和配置
+# Environment Variables and Configuration
 .env
 .env.*
 *.env.local
@@ -60,20 +60,20 @@ keys/
 *.env.production
 config.local.js
 
-# 日志文件
+# Log Files
 logs/
 *.log
 
-# 测试覆盖率报告
+# Test Coverage Reports
 coverage/
 
-# 其他
+# Others
 .cache/
 dist/
 tmp/
 temp/
 
-# 私有数据
+# Private Data
 backend/data/
 android/app/release/
 android/app/debug/ 

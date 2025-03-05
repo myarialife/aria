@@ -8,24 +8,24 @@
     <fragment
         android:id="@+id/navigation_assistant"
         android:name="com.aria.assistant.ui.assistant.AssistantFragment"
-        android:label="助手"
+        android:label="Assistant"
         tools:layout="@layout/fragment_assistant" />
 
     <fragment
         android:id="@+id/navigation_data"
         android:name="com.aria.assistant.ui.data.DataFragment"
-        android:label="数据管理"
+        android:label="Data Management"
         tools:layout="@layout/fragment_data" />
 
     <fragment
         android:id="@+id/navigation_wallet"
         android:name="com.aria.assistant.ui.wallet.WalletFragment"
-        android:label="钱包"
+        android:label="Wallet"
         tools:layout="@layout/fragment_wallet" />
 
     <fragment
         android:id="@+id/navigation_profile"
         android:name="com.aria.assistant.ui.profile.ProfileFragment"
-        android:label="个人资料"
+        android:label="Profile"
         tools:layout="@layout/fragment_profile" />
 </navigation> 

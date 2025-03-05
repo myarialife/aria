@@ -57,27 +57,29 @@ const UserSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// 密码加密中间件
+// Password encryption middleware
 UserSchema.pre('save', async function(next) {
   const user = this;
   
-  // 只有当密码被修改时才重新加密
-  if (!user.isModified('password')) return next();
+  // Only re-encrypt when password is modified
+  if (!user.isModified('password')) {
+    return next();
+  }
   
   try {
-    // 生成盐
+    // Generate salt
     const salt = await bcrypt.genSalt(10);
-    // 使用盐哈希密码
-    const hashedPassword = await bcrypt.hash(user.password, salt);
-    // 替换原密码
-    user.password = hashedPassword;
+    // Hash password with salt
+    const hash = await bcrypt.hash(user.password, salt);
+    // Replace original password
+    user.password = hash;
     next();
   } catch (error) {
-    return next(error);
+    next(error);
   }
 });
 
-// 密码验证方法
+// Password verification method
 UserSchema.methods.comparePassword = async function(candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };

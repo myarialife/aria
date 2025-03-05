@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.aria.assistant.R
 import com.aria.assistant.databinding.FragmentDashboardBinding
@@ -13,7 +13,7 @@ import com.aria.assistant.utils.formatAriaTokenAmount
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
- * 主页面Fragment
+ * Main dashboard Fragment
  */
 @AndroidEntryPoint
 class DashboardFragment : Fragment() {
@@ -21,7 +21,7 @@ class DashboardFragment : Fragment() {
     private var _binding: FragmentDashboardBinding? = null
     private val binding get() = _binding!!
     
-    private lateinit var viewModel: DashboardViewModel
+    private val viewModel: DashboardViewModel by viewModels()
     
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,87 +35,85 @@ class DashboardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
-        viewModel = ViewModelProvider(this)[DashboardViewModel::class.java]
-        
         setupUI()
         setupObservers()
     }
     
     /**
-     * 设置UI
+     * Set up UI elements
      */
     private fun setupUI() {
-        // 设置钱包卡片点击事件
-        binding.cardWallet.setOnClickListener {
+        // Set wallet card click event
+        binding.walletCard.setOnClickListener {
             findNavController().navigate(R.id.action_dashboardFragment_to_walletFragment)
         }
         
-        // 设置数据卡片点击事件
-        binding.cardData.setOnClickListener {
+        // Set data card click event
+        binding.dataCard.setOnClickListener {
             findNavController().navigate(R.id.action_dashboardFragment_to_dataFragment)
         }
         
-        // 设置助手卡片点击事件
-        binding.cardAssistant.setOnClickListener {
+        // Set assistant card click event
+        binding.assistantCard.setOnClickListener {
             findNavController().navigate(R.id.action_dashboardFragment_to_assistantFragment)
         }
         
-        // 设置社区卡片点击事件
-        binding.cardCommunity.setOnClickListener {
+        // Set community card click event
+        binding.communityCard.setOnClickListener {
             findNavController().navigate(R.id.action_dashboardFragment_to_communityFragment)
         }
         
-        // 刷新按钮
-        binding.btnRefresh.setOnClickListener {
-            viewModel.refresh()
+        // Refresh button
+        binding.refreshButton.setOnClickListener {
+            viewModel.refreshDashboardData()
         }
     }
     
     /**
-     * 设置观察者
+     * Set up observers
      */
     private fun setupObservers() {
-        // 观察钱包状态
-        viewModel.walletStatus.observe(viewLifecycleOwner) { hasWallet ->
-            binding.tvWalletStatus.text = if (hasWallet) {
-                getString(R.string.wallet_connected)
-            } else {
-                getString(R.string.wallet_not_connected)
-            }
+        // Observe wallet status
+        viewModel.walletStatus.observe(viewLifecycleOwner) { walletStatus ->
+            binding.walletStatusText.text = walletStatus
+            binding.walletStatusIcon.setImageResource(
+                if (walletStatus == "Connected") R.drawable.ic_wallet_connected
+                else R.drawable.ic_wallet_disconnected
+            )
         }
         
-        // 观察代币余额
+        // Observe token balance
         viewModel.tokenBalance.observe(viewLifecycleOwner) { balance ->
-            binding.tvTokenBalance.text = formatAriaTokenAmount(balance)
+            binding.tokenBalanceText.text = "$balance ARI"
         }
         
-        // 观察数据收集状态
-        viewModel.dataCollectionEnabled.observe(viewLifecycleOwner) { isEnabled ->
-            binding.tvDataStatus.text = if (isEnabled) {
-                getString(R.string.data_collection_enabled)
-            } else {
-                getString(R.string.data_collection_disabled)
-            }
+        // Observe data collection status
+        viewModel.dataCollectionEnabled.observe(viewLifecycleOwner) { enabled ->
+            binding.dataCollectionStatusText.text = if (enabled) "Active" else "Inactive"
+            binding.dataCollectionStatusIcon.setImageResource(
+                if (enabled) R.drawable.ic_data_active
+                else R.drawable.ic_data_inactive
+            )
         }
         
-        // 观察收集的数据计数
-        viewModel.collectedDataCount.observe(viewLifecycleOwner) { count ->
-            binding.tvDataCount.text = getString(R.string.data_count_format, count)
+        // Observe collected data count
+        viewModel.dataPointsCollected.observe(viewLifecycleOwner) { count ->
+            binding.dataPointsText.text = "$count"
         }
         
-        // 观察助手对话计数
-        viewModel.conversationCount.observe(viewLifecycleOwner) { count ->
-            binding.tvAssistantCount.text = getString(R.string.conversation_count_format, count)
+        // Observe assistant dialog count
+        viewModel.assistantInteractions.observe(viewLifecycleOwner) { count ->
+            binding.assistantInteractionsText.text = "$count"
         }
         
-        // 观察总奖励
+        // Observe total rewards
         viewModel.totalRewards.observe(viewLifecycleOwner) { rewards ->
-            binding.tvTotalRewards.text = formatAriaTokenAmount(rewards)
+            binding.totalRewardsText.text = "$rewards ARI"
         }
         
-        // 观察用户级别
+        // Observe user level
         viewModel.userLevel.observe(viewLifecycleOwner) { level ->
-            binding.tvUserLevel.text = getString(R.string.user_level_format, level)
+            binding.userLevelText.text = "Level $level"
         }
     }
     

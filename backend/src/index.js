@@ -7,84 +7,106 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const path = require('path');
 
-// 加载环境变量
+// Load environment variables
 dotenv.config();
 
-// 导入路由
+// Import routes
 const authRoutes = require('./api/routes/auth');
-const userRoutes = require('./api/routes/user');
-const dataRoutes = require('./api/routes/data');
-const assistantRoutes = require('./api/routes/assistant');
-const walletRoutes = require('./api/routes/wallet');
+const userRoutes = require('./api/routes/userRoutes');
+const dataRoutes = require('./api/routes/dataRoutes');
+const assistantRoutes = require('./api/routes/assistantRoutes');
+const walletRoutes = require('./api/routes/walletRoutes');
+const analyticsRoutes = require('./api/routes/analyticsRoutes');
 
-// 初始化应用
+// Initialize app
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 中间件
-app.use(helmet()); // 安全头
-app.use(compression()); // 压缩响应
-app.use(morgan('combined')); // 日志
-app.use(cors()); // 跨域支持
-app.use(express.json({ limit: '10mb' })); // JSON解析
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// Middleware
+app.use(helmet()); // Security headers
+app.use(compression()); // Response compression
+app.use(morgan('combined')); // Logging
+app.use(cors()); // CORS support
+app.use(express.json({ limit: '10mb' })); // JSON parsing
+app.use(express.urlencoded({ extended: true }));
 
-// API路由
+// API routes
 app.use('/api/auth', authRoutes);
-app.use('/api/user', userRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/data', dataRoutes);
-app.use('/api/assistant', assistantRoutes);
 app.use('/api/wallet', walletRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/assistant', assistantRoutes);
 
-// 健康检查端点
+// Health check endpoint
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.status(200).json({ status: 'OK', timestamp: new Date() });
 });
 
-// 错误处理中间件
+// Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(err.statusCode || 500).json({
-    error: {
-      message: err.message || 'Internal Server Error',
-      status: err.statusCode || 500
-    }
+  console.error(`Error: ${err.stack}`);
+  
+  const statusCode = err.statusCode || 500;
+  const message = err.message || 'Internal Server Error';
+  
+  res.status(statusCode).json({
+    status: 'error',
+    message: message
   });
 });
 
-// 404处理
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({
-    error: {
-      message: 'Resource not found',
-      status: 404
-    }
+    status: 'error',
+    message: 'Resource not found'
   });
 });
 
-// 连接到MongoDB
+// Connect to MongoDB
 mongoose
-  .connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/aria', {
+  .connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    useCreateIndex: true,
+    useFindAndModify: false
   })
-  .then(() => {
-    console.log('Connected to MongoDB');
-    
-    // 启动服务器
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-  })
+  .then(() => console.log('Connected to MongoDB'))
   .catch(err => {
-    console.error('Could not connect to MongoDB', err);
+    console.error('MongoDB connection error:', err);
     process.exit(1);
   });
 
-// 处理进程终止信号
-process.on('SIGINT', () => {
-  mongoose.connection.close(() => {
-    console.log('MongoDB connection closed');
-    process.exit(0);
-  });
+// Start server
+const server = app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`API Documentation: http://localhost:${PORT}/api-docs`);
+  }
 });
+
+// Handle termination signals
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
+
+function gracefulShutdown() {
+  console.log('Received termination signal. Shutting down gracefully...');
+  
+  server.close(() => {
+    console.log('HTTP server closed.');
+    
+    mongoose.connection.close(false, () => {
+      console.log('MongoDB connection closed.');
+      process.exit(0);
+    });
+  });
+  
+  // Force close after 10s
+  setTimeout(() => {
+    console.error('Could not close connections in time, forcefully shutting down');
+    process.exit(1);
+  }, 10000);
+}

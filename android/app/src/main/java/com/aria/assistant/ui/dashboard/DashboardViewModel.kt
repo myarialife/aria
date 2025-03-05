@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * 主页面ViewModel
+ * Dashboard ViewModel
  */
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
@@ -26,31 +26,31 @@ class DashboardViewModel @Inject constructor(
     
     private val apiService: AriaApiService = RetrofitHelper.apiService
     
-    // 钱包状态
-    private val _walletStatus = MutableLiveData<Boolean>()
-    val walletStatus: LiveData<Boolean> = _walletStatus
+    // Wallet status
+    private val _walletStatus = MutableLiveData<String>()
+    val walletStatus: LiveData<String> = _walletStatus
     
-    // 代币余额
+    // Token balance
     private val _tokenBalance = MutableLiveData<Double>()
     val tokenBalance: LiveData<Double> = _tokenBalance
     
-    // 数据收集状态
+    // Data collection status
     private val _dataCollectionEnabled = MutableLiveData<Boolean>()
     val dataCollectionEnabled: LiveData<Boolean> = _dataCollectionEnabled
     
-    // 收集的数据计数
-    private val _collectedDataCount = MutableLiveData<Int>()
-    val collectedDataCount: LiveData<Int> = _collectedDataCount
+    // Collected data count
+    private val _dataPointsCollected = MutableLiveData<Int>()
+    val dataPointsCollected: LiveData<Int> = _dataPointsCollected
     
-    // 对话计数
-    private val _conversationCount = MutableLiveData<Int>()
-    val conversationCount: LiveData<Int> = _conversationCount
+    // Conversation count
+    private val _assistantInteractions = MutableLiveData<Int>()
+    val assistantInteractions: LiveData<Int> = _assistantInteractions
     
-    // 总奖励
+    // Total rewards
     private val _totalRewards = MutableLiveData<Double>()
     val totalRewards: LiveData<Double> = _totalRewards
     
-    // 用户级别
+    // User level
     private val _userLevel = MutableLiveData<Int>()
     val userLevel: LiveData<Int> = _userLevel
     
@@ -59,68 +59,74 @@ class DashboardViewModel @Inject constructor(
     }
     
     /**
-     * 加载初始数据
+     * Load initial data
      */
     private fun loadInitialData() {
         viewModelScope.launch(Dispatchers.IO) {
-            // 加载钱包信息
-            _walletStatus.postValue(walletRepository.hasWallet())
+            // Load wallet information
+            _walletStatus.postValue(if (walletRepository.isWalletConnected()) "Connected" else "Not Connected")
             
-            // 监听钱包余额
-            walletRepository.tokenBalance.observeForever { balance ->
+            // Monitor wallet balance
+            walletRepository.getTokenBalance().collect { balance ->
                 _tokenBalance.postValue(balance)
             }
             
-            // 监听数据收集状态
-            dataRepository.dataCollectionEnabled.observeForever { isEnabled ->
+            // Monitor data collection status
+            dataRepository.isDataCollectionEnabled().collect { isEnabled ->
                 _dataCollectionEnabled.postValue(isEnabled)
             }
             
-            // 监听收集的数据计数
-            dataRepository.collectedDataCount.observeForever { count ->
-                _collectedDataCount.postValue(count)
+            // Monitor collected data count
+            dataRepository.getDataPointCount().collect { count ->
+                _dataPointsCollected.postValue(count)
             }
             
-            // 监听总奖励
-            dataRepository.totalRewards.observeForever { rewards ->
+            // Monitor total rewards
+            walletRepository.getTotalRewards().collect { rewards ->
                 _totalRewards.postValue(rewards)
             }
             
-            // 获取用户统计信息
-            fetchUserStats()
+            // Get user statistics
+            getUserStats()
         }
     }
     
     /**
-     * 获取用户统计信息
+     * Get user statistics
      */
-    private fun fetchUserStats() {
+    private fun getUserStats() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val response = apiService.getUserStats()
-                if (response.isSuccessful && response.body()?.success == true) {
-                    val stats = response.body()?.data
-                    stats?.let {
-                        _conversationCount.postValue(it.conversationCount)
-                        _totalRewards.postValue(it.totalRewards)
-                        _userLevel.postValue(it.userLevel)
-                    }
-                }
+                // Get user profile information
+                val userProfile = apiService.getUserProfile()
+                _userLevel.postValue(userProfile.level)
+                
+                // Get assistant interaction count
+                val interactions = apiService.getInteractionCount()
+                _assistantInteractions.postValue(interactions)
             } catch (e: Exception) {
-                e.printStackTrace()
+                // Handle errors
+                _userLevel.postValue(1)
+                _assistantInteractions.postValue(0)
             }
         }
     }
     
     /**
-     * 刷新所有数据
+     * Refresh all dashboard data
      */
-    fun refresh() {
+    fun refreshDashboardData() {
         viewModelScope.launch {
-            walletRepository.refreshWalletInfo()
-            dataRepository.refreshDataCount()
-            dataRepository.loadTotalRewards()
-            fetchUserStats()
+            try {
+                _walletStatus.value = if (walletRepository.isWalletConnected()) "Connected" else "Not Connected"
+                _tokenBalance.value = walletRepository.getTokenBalanceSync()
+                _dataCollectionEnabled.value = dataRepository.isDataCollectionEnabledSync()
+                _dataPointsCollected.value = dataRepository.getDataPointCountSync()
+                _totalRewards.value = walletRepository.getTotalRewardsSync()
+                getUserStats()
+            } catch (e: Exception) {
+                // Handle refresh errors
+            }
         }
     }
 } 

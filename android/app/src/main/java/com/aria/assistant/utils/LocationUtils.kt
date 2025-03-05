@@ -7,14 +7,15 @@ import android.location.Location
 import android.location.LocationManager
 import android.os.Build
 import androidx.core.app.ActivityCompat
+import com.google.android.gms.location.LocationServices
 
 /**
- * 位置工具类
+ * Location utility class
  */
 object LocationUtils {
     
     /**
-     * 检查是否有位置权限
+     * Check if location permissions are granted
      */
     fun hasLocationPermission(context: Context): Boolean {
         return ActivityCompat.checkSelfPermission(
@@ -27,35 +28,33 @@ object LocationUtils {
     }
     
     /**
-     * 获取最后已知位置
+     * Get last known location
      */
-    fun getLastKnownLocation(context: Context): Location? {
-        // 检查权限
+    suspend fun getLastLocation(context: Context): Location? {
+        // Check permissions
         if (!hasLocationPermission(context)) {
             return null
         }
         
-        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        val providers = locationManager.getProviders(true)
-        var bestLocation: Location? = null
-        
-        for (provider in providers) {
-            try {
-                val location = locationManager.getLastKnownLocation(provider) ?: continue
-                
-                if (bestLocation == null || location.accuracy < bestLocation.accuracy) {
-                    bestLocation = location
-                }
-            } catch (e: SecurityException) {
-                e.printStackTrace()
+        return try {
+            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+            
+            kotlin.coroutines.suspendCoroutine { continuation ->
+                fusedLocationClient.lastLocation
+                    .addOnSuccessListener { location ->
+                        continuation.resumeWith(Result.success(location))
+                    }
+                    .addOnFailureListener { exception ->
+                        continuation.resumeWith(Result.failure(exception))
+                    }
             }
+        } catch (e: Exception) {
+            null
         }
-        
-        return bestLocation
     }
     
     /**
-     * 检查位置服务是否启用
+     * Check if location services are enabled
      */
     fun isLocationEnabled(context: Context): Boolean {
         val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -64,16 +63,26 @@ object LocationUtils {
     }
     
     /**
-     * 计算两个位置之间的距离（米）
+     * Calculate distance between two locations (in meters)
      */
-    fun getDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Float {
+    fun calculateDistance(startLat: Double, startLng: Double, endLat: Double, endLng: Double): Float {
         val results = FloatArray(1)
-        Location.distanceBetween(lat1, lon1, lat2, lon2, results)
+        Location.distanceBetween(startLat, startLng, endLat, endLng, results)
         return results[0]
     }
     
     /**
-     * 获取所需的位置权限
+     * Get required location permissions
+     */
+    fun getLocationPermissions(): Array<String> {
+        return arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+    }
+    
+    /**
+     * Get required location permissions for Android 12 and above
      */
     fun getRequiredLocationPermissions(): Array<String> {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
