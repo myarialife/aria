@@ -1,33 +1,79 @@
-# Rust build artifacts
-/target
-**/*.rs.bk
-Cargo.lock
-
-# Node.js dependencies
-/node_modules
-package-lock.json
-
-# IDE and editor files
-.idea/
-.vscode/
+# 操作系统文件
+.DS_Store
+Thumbs.db
+.directory
 *.swp
 *.swo
 
-# Solana keypairs and private keys
-/keys/*.json
+# 编辑器配置
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.settings/
+.project
+.classpath
 
-# Environment variables
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+.npm/
+.yarn/
+.pnp.*
+
+# Android / Gradle
+android/build/
+android/app/build/
+android/gradle/
+android/local.properties
+android/.gradle/
+android/captures/
+android/.externalNativeBuild/
+android/.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Solana / Rust
+aria-token/target/
+aria-token/Cargo.lock
+**/*.rs.bk
+
+# 私钥和安全文件
+keys/
+**/*.keypair
+**/*.pem
+**/*.key
+**/*.p12
+**/*.jks
+**/*.keystore
+
+# 环境变量和配置
 .env
-.env.local
+.env.*
+*.env.local
+*.env.development
+*.env.test
+*.env.production
+config.local.js
 
-# Build output
-/dist
-/build
-
-# Logs
+# 日志文件
+logs/
 *.log
-npm-debug.log*
 
-# Operating system files
-.DS_Store
-Thumbs.db 
+# 测试覆盖率报告
+coverage/
+
+# 其他
+.cache/
+dist/
+tmp/
+temp/
+
+# 私有数据
+backend/data/
+android/app/release/
+android/app/debug/ 
