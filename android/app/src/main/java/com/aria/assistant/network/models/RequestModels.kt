@@ -3,7 +3,7 @@ package com.aria.assistant.network.models
 import com.google.gson.annotations.SerializedName
 
 /**
- * 提交数据请求
+ * Submit Data Request
  */
 data class SubmitDataRequest(
     @SerializedName("items") val items: List<DataItem>
@@ -26,7 +26,7 @@ data class SubmitDataRequest(
 }
 
 /**
- * 代币奖励请求
+ * Token Reward Request
  */
 data class TokenRewardRequest(
     @SerializedName("walletAddress") val walletAddress: String
@@ -41,7 +41,7 @@ data class TokenRewardRequest(
 }
 
 /**
- * 数据权限请求
+ * Data Permission Request
  */
 data class DataPermissionRequest(
     @SerializedName("type") val type: String,
@@ -49,7 +49,7 @@ data class DataPermissionRequest(
 )
 
 /**
- * 助手查询请求
+ * Assistant Query Request
  */
 data class AssistantQueryRequest(
     @SerializedName("query") val query: String,

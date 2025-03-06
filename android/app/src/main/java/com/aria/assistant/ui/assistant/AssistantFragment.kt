@@ -32,13 +32,13 @@ class AssistantFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
-        // 初始化ViewModel
+        // Initialize ViewModel
         viewModel = ViewModelProvider(this).get(AssistantViewModel::class.java)
         
-        // 设置RecyclerView
+        // Setup RecyclerView
         setupRecyclerView()
         
-        // 设置发送按钮点击事件
+        // Setup send button click event
         binding.sendButton.setOnClickListener {
             val message = binding.messageInput.text.toString().trim()
             if (message.isNotEmpty()) {
@@ -47,7 +47,7 @@ class AssistantFragment : Fragment() {
             }
         }
         
-        // 观察消息列表变化
+        // Observe message list changes
         viewModel.messages.observe(viewLifecycleOwner) { messages ->
             adapter.submitList(messages)
             if (messages.isNotEmpty()) {
@@ -55,20 +55,20 @@ class AssistantFragment : Fragment() {
             }
         }
         
-        // 观察加载状态
+        // Observe loading state
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
             binding.sendButton.isEnabled = !isLoading
         }
         
-        // 观察错误消息
+        // Observe error messages
         viewModel.errorMessage.observe(viewLifecycleOwner) { errorMessage ->
             if (errorMessage.isNotEmpty()) {
                 Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
             }
         }
         
-        // 如果是新会话，添加问候语
+        // Add greeting message if this is a new conversation
         if (viewModel.isNewConversation) {
             viewModel.addMessage(
                 AssistantMessage(

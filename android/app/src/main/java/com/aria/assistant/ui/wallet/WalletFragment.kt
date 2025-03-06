@@ -31,63 +31,63 @@ class WalletFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
-        // 初始化ViewModel
+        // Initialize ViewModel
         viewModel = ViewModelProvider(this).get(WalletViewModel::class.java)
         
         setupUI()
         setupObservers()
         
-        // 加载钱包状态
+        // Load wallet status
         viewModel.checkWalletStatus()
     }
     
     private fun setupUI() {
-        // 设置创建钱包按钮点击事件
+        // Setup create wallet button click event
         binding.createWalletButton.setOnClickListener {
             if (!viewModel.hasWallet()) {
                 createWallet()
             } else {
-                Toast.makeText(context, "钱包已存在", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Wallet already exists", Toast.LENGTH_SHORT).show()
             }
         }
         
-        // 设置导入钱包按钮点击事件
+        // Setup import wallet button click event
         binding.importWalletButton.setOnClickListener {
-            // 在实际应用中，这里应该打开一个对话框让用户输入助记词
-            // 简化版只是显示一个提示
-            Toast.makeText(context, "请在设置中完成钱包导入", Toast.LENGTH_SHORT).show()
+            // In a real application, this should open a dialog for the user to input the mnemonic
+            // Simplified version just shows a toast
+            Toast.makeText(context, "Please complete wallet import in settings", Toast.LENGTH_SHORT).show()
         }
         
-        // 设置发送代币按钮点击事件
+        // Setup send tokens button click event
         binding.sendTokensButton.setOnClickListener {
-            // 在实际应用中，这里应该打开一个对话框让用户输入接收地址和金额
-            Toast.makeText(context, "发送代币功能即将上线", Toast.LENGTH_SHORT).show()
+            // In a real application, this should open a dialog for the user to input recipient address and amount
+            Toast.makeText(context, "Send tokens feature coming soon", Toast.LENGTH_SHORT).show()
         }
         
-        // 设置接收代币按钮点击事件
+        // Setup receive tokens button click event
         binding.receiveTokensButton.setOnClickListener {
-            // 在实际应用中，这里应该显示当前钱包地址的二维码
+            // In a real application, this should display a QR code of the current wallet address
             val address = viewModel.getWalletAddress()
             if (address != null) {
-                Toast.makeText(context, "您的钱包地址: $address", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "Your wallet address: $address", Toast.LENGTH_LONG).show()
             } else {
-                Toast.makeText(context, "请先创建钱包", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Please create a wallet first", Toast.LENGTH_SHORT).show()
             }
         }
     }
     
     private fun setupObservers() {
-        // 观察钱包状态
+        // Observe wallet status
         viewModel.walletStatus.observe(viewLifecycleOwner) { hasWallet ->
             updateWalletUI(hasWallet)
         }
         
-        // 观察钱包余额
+        // Observe wallet balance
         viewModel.walletBalance.observe(viewLifecycleOwner) { balance ->
             binding.balanceTextView.text = "$balance ARI"
         }
         
-        // 观察错误消息
+        // Observe error messages
         viewModel.errorMessage.observe(viewLifecycleOwner) { errorMessage ->
             if (errorMessage.isNotEmpty()) {
                 Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
@@ -97,16 +97,16 @@ class WalletFragment : Fragment() {
     
     private fun updateWalletUI(hasWallet: Boolean) {
         if (hasWallet) {
-            // 显示钱包信息区域
+            // Show wallet info area
             binding.walletInfoLayout.visibility = View.VISIBLE
             binding.walletSetupLayout.visibility = View.GONE
             
-            // 刷新钱包余额
+            // Refresh wallet balance
             lifecycleScope.launch {
                 viewModel.refreshBalance()
             }
             
-            // 显示钱包地址
+            // Display wallet address
             val address = viewModel.getWalletAddress()
             binding.addressTextView.text = address?.let { 
                 val formatted = if (it.length > 20) {
@@ -114,10 +114,10 @@ class WalletFragment : Fragment() {
                 } else {
                     it
                 }
-                "地址: $formatted"
-            } ?: "地址: 未知"
+                "Address: $formatted"
+            } ?: "Address: Unknown"
         } else {
-            // 显示钱包设置区域
+            // Show wallet setup area
             binding.walletInfoLayout.visibility = View.GONE
             binding.walletSetupLayout.visibility = View.VISIBLE
         }
@@ -128,12 +128,12 @@ class WalletFragment : Fragment() {
             try {
                 val mnemonic = viewModel.createWallet()
                 
-                // 在实际应用中，这里应该显示助记词并提醒用户备份
-                // 简化版只是显示一个提示
-                Toast.makeText(context, "钱包创建成功！请妥善保管您的助记词", Toast.LENGTH_LONG).show()
+                // In a real application, this should display the mnemonic and remind the user to back it up
+                // Simplified version just shows a toast
+                Toast.makeText(context, "Wallet created successfully! Please keep your mnemonic safe", Toast.LENGTH_LONG).show()
                 
             } catch (e: Exception) {
-                Toast.makeText(context, "创建钱包失败: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Failed to create wallet: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }

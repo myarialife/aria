@@ -16,102 +16,106 @@ class AssistantViewModel(application: Application) : AndroidViewModel(applicatio
     
     private val repository: AssistantRepository
     
-    // 当前会话ID
-    var conversationId: Long = 0
-    // 是否是新会话
+    // Current conversation ID
+    var currentConversationId: Long = 0
+    // Is this a new conversation
     var isNewConversation: Boolean = true
     
-    // 消息列表
+    // Message list
     private val _messages = MutableLiveData<List<AssistantMessage>>(emptyList())
     val messages: LiveData<List<AssistantMessage>> = _messages
     
-    // 加载状态
+    // Loading state
     private val _isLoading = MutableLiveData<Boolean>(false)
     val isLoading: LiveData<Boolean> = _isLoading
     
-    // 错误消息
-    private val _errorMessage = MutableLiveData<String>("")
-    val errorMessage: LiveData<String> = _errorMessage
+    // Error message
+    private val _error = MutableLiveData<String?>(null)
+    val error: LiveData<String?> = _error
     
     init {
         val database = (application as com.aria.assistant.AriaApplication).database
         repository = AssistantRepository(database.assistantConversationDao())
         
-        // 创建新的会话
+        // Create a new conversation
         createNewConversation()
     }
     
+    // Create a new conversation
     private fun createNewConversation() {
         viewModelScope.launch(Dispatchers.IO) {
             val conversation = AssistantConversation(
-                title = "新会话 - ${System.currentTimeMillis()}",
+                title = "New conversation - ${System.currentTimeMillis()}",
                 createdAt = System.currentTimeMillis(),
                 updatedAt = System.currentTimeMillis()
             )
-            conversationId = repository.insertConversation(conversation)
+            currentConversationId = repository.insertConversation(conversation)
             isNewConversation = true
+            
+            // Add welcome message
+            val welcomeMessage = AssistantMessage(
+                conversationId = currentConversationId,
+                content = "Hello! I am ARIA, your AI personal assistant. How can I help you today?",
+                isFromUser = false,
+                timestamp = System.currentTimeMillis()
+            )
+            repository.insertMessage(welcomeMessage.copy(conversationId = currentConversationId))
+            
+            loadMessages()
         }
     }
     
+    // Add user message
     fun sendMessage(content: String) {
         if (_isLoading.value == true) return
         
-        // 添加用户消息
+        // Save user message
         val userMessage = AssistantMessage(
-            conversationId = conversationId,
+            conversationId = currentConversationId,
             content = content,
             isFromUser = true,
             timestamp = System.currentTimeMillis()
         )
         addMessage(userMessage)
         
-        // 调用AI助手API
+        // Call AI assistant API
         _isLoading.value = true
         viewModelScope.launch {
             try {
-                // 在MVP中，我们可以使用一个简单的延迟模拟AI响应
-                val dummyResponses = listOf(
-                    "我理解你想了解更多关于这个问题，让我为你解释一下...",
-                    "这是一个很好的问题。根据我的分析...",
-                    "我已经处理了你的请求，以下是我的答案...",
-                    "基于你提供的信息，我认为...",
-                    "我已经分析了你的问题，这是我的建议..."
-                )
+                delay(1500) // Simulate network delay
                 
-                // 模拟网络延迟
-                kotlinx.coroutines.delay(1500)
-                
-                // 创建AI回复消息
-                val aiMessage = AssistantMessage(
-                    conversationId = conversationId,
-                    content = dummyResponses.random() + "\n\n你的问题是: $content",
+                // Mock AI response for now
+                val assistantMessage = AssistantMessage(
+                    conversationId = currentConversationId,
+                    content = generateMockResponse(content),
                     isFromUser = false,
                     timestamp = System.currentTimeMillis()
                 )
+                addMessage(assistantMessage)
                 
-                addMessage(aiMessage)
+                // Update conversation timestamp
+                repository.updateConversationTimestamp(currentConversationId, System.currentTimeMillis())
                 
-                // 实际项目中，这里会调用真实的AI API
+                // Actual project would call the API here
                 // val response = assistantApiService.sendMessage(content)
-                // addMessage(AssistantMessage(conversationId = conversationId, content = response.message, isFromUser = false))
+                // addMessage(AssistantMessage(conversationId = currentConversationId, content = response.message, isFromUser = false))
                 
             } catch (e: Exception) {
-                _errorMessage.value = "获取AI回复失败: ${e.message}"
-            } finally {
+                _error.value = "Failed to get response: ${e.message}"
                 _isLoading.value = false
             }
         }
     }
     
     fun addMessage(message: AssistantMessage) {
-        // 将消息添加到内存中的列表
+        // Add message to in-memory list
         val currentList = _messages.value.orEmpty().toMutableList()
         currentList.add(message)
         _messages.value = currentList
         
-        // 保存消息到数据库
+        // Save message to database
         viewModelScope.launch(Dispatchers.IO) {
-            repository.insertMessage(message.copy(conversationId = conversationId))
+            repository.insertMessage(message.copy(conversationId = currentConversationId))
         }
     }
     
@@ -120,16 +124,46 @@ class AssistantViewModel(application: Application) : AndroidViewModel(applicatio
             try {
                 val conversation = repository.getConversationWithMessages(id)
                 if (conversation != null) {
-                    conversationId = conversation.conversation.id
+                    currentConversationId = conversation.conversation.id
                     _messages.postValue(conversation.messages)
                     isNewConversation = false
                 } else {
                     createNewConversation()
                 }
             } catch (e: Exception) {
-                _errorMessage.postValue("加载会话失败: ${e.message}")
+                _error.postValue("Failed to load conversation: ${e.message}")
                 createNewConversation()
             }
         }
+    }
+    
+    private fun generateMockResponse(input: String): String {
+        return when {
+            input.contains("hello", ignoreCase = true) || 
+            input.contains("hi", ignoreCase = true) -> 
+                "Hello! How can I assist you today?"
+            
+            input.contains("weather", ignoreCase = true) -> 
+                "I'm sorry, I don't have access to real-time weather data yet. Would you like me to help you with something else?"
+            
+            input.contains("aria", ignoreCase = true) -> 
+                "ARIA is a decentralized AI personal assistant that aims to help you manage your digital life while giving you control over your data."
+            
+            input.contains("token", ignoreCase = true) || 
+            input.contains("crypto", ignoreCase = true) ->
+                "ARIA tokens (ARI) are the cryptocurrency that powers the ARIA ecosystem. They're built on the Solana blockchain and can be earned by contributing data to the platform."
+            
+            input.contains("data", ignoreCase = true) ->
+                "Your data is valuable! With ARIA, you control what data you share and get rewarded with ARIA tokens for contributing to the ecosystem."
+            
+            input.length < 10 ->
+                "Could you please provide more details so I can assist you better?"
+            
+            else -> "I understand you're interested in this topic. As ARIA develops, I'll be able to provide more specific assistance. Is there anything else you'd like to know?"
+        }
+    }
+    
+    fun clearError() {
+        _error.value = null
     }
 } 
