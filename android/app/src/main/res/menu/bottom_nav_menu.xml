@@ -3,17 +3,17 @@
     <item
         android:id="@+id/navigation_assistant"
         android:icon="@drawable/ic_assistant"
-        android:title="助手" />
+        android:title="Assistant" />
     <item
         android:id="@+id/navigation_data"
         android:icon="@drawable/ic_data"
-        android:title="数据" />
+        android:title="Data" />
     <item
         android:id="@+id/navigation_wallet"
         android:icon="@drawable/ic_wallet"
-        android:title="钱包" />
+        android:title="Wallet" />
     <item
         android:id="@+id/navigation_profile"
         android:icon="@drawable/ic_profile"
-        android:title="个人" />
+        android:title="Profile" />
 </menu> 

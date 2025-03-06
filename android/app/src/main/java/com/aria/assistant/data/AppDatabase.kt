@@ -16,7 +16,7 @@ import com.aria.assistant.data.entities.Converters
 import com.aria.assistant.data.entities.WalletTransaction
 
 /**
- * 应用数据库
+ * Application Database
  */
 @Database(
     entities = [
@@ -32,22 +32,22 @@ import com.aria.assistant.data.entities.WalletTransaction
 abstract class AppDatabase : RoomDatabase() {
     
     /**
-     * 获取助手会话DAO
+     * Get assistant conversation DAO
      */
     abstract fun assistantConversationDao(): AssistantConversationDao
     
     /**
-     * 获取助手消息DAO
+     * Get assistant message DAO
      */
     abstract fun assistantMessageDao(): AssistantMessageDao
     
     /**
-     * 获取收集数据DAO
+     * Get collected data DAO
      */
     abstract fun collectedDataDao(): CollectedDataDao
     
     /**
-     * 获取钱包交易DAO
+     * Get wallet transaction DAO
      */
     abstract fun walletTransactionDao(): WalletTransactionDao
     

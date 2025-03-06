@@ -12,7 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * 钱包存储库 - 负责管理钱包相关操作
+ * Wallet Repository - Responsible for wallet-related operations
  */
 class WalletRepository(
     private val context: Context,
@@ -21,11 +21,11 @@ class WalletRepository(
     private val walletManager = SolanaWalletManager(context)
     private val walletDatabase = AppDatabase.getInstance(context)
     
-    // 当前钱包地址
+    // Current wallet address
     private val _walletAddress = MutableLiveData<String>()
     val walletAddress: LiveData<String> = _walletAddress
     
-    // 当前代币余额
+    // Current token balance
     private val _tokenBalance = MutableLiveData<Double>()
     val tokenBalance: LiveData<Double> = _tokenBalance
     
@@ -34,7 +34,7 @@ class WalletRepository(
     }
     
     /**
-     * 刷新钱包信息
+     * Refresh wallet information
      */
     suspend fun refreshWalletInfo() {
         withContext(Dispatchers.IO) {
@@ -46,7 +46,7 @@ class WalletRepository(
                     val balance = walletManager.getAriaTokenBalance()
                     _tokenBalance.postValue(balance)
                 } catch (e: Exception) {
-                    // 如果本地钱包获取失败，尝试从API获取
+                    // If local wallet retrieval fails, try from API
                     try {
                         val response = apiService.getWalletInfo(address)
                         if (response.isSuccessful && response.body()?.success == true) {
@@ -64,7 +64,7 @@ class WalletRepository(
     }
     
     /**
-     * 创建新钱包
+     * Create new wallet
      */
     suspend fun createWallet(): List<String>? {
         return withContext(Dispatchers.IO) {
@@ -80,7 +80,7 @@ class WalletRepository(
     }
     
     /**
-     * 导入钱包
+     * Import wallet
      */
     suspend fun importWallet(mnemonic: List<String>): Boolean {
         return withContext(Dispatchers.IO) {
@@ -96,14 +96,14 @@ class WalletRepository(
     }
     
     /**
-     * 获取交易历史
+     * Get transaction history
      */
     fun getTransactionHistory(): LiveData<List<WalletTransaction>> {
         return walletDatabase.walletTransactionDao().getAllTransactions()
     }
     
     /**
-     * 请求代币奖励
+     * Request token reward
      */
     suspend fun requestTokenReward(): Boolean {
         return withContext(Dispatchers.IO) {
@@ -113,7 +113,7 @@ class WalletRepository(
                 val response = apiService.requestTokenReward(request)
                 
                 if (response.isSuccessful && response.body()?.success == true) {
-                    // 更新本地交易记录
+                    // Update local transaction record
                     response.body()?.data?.transactionInfo?.let { transaction ->
                         val walletTx = WalletTransaction(
                             id = transaction.txId,
@@ -121,7 +121,7 @@ class WalletRepository(
                             timestamp = System.currentTimeMillis(),
                             type = "REWARD",
                             status = "COMPLETED",
-                            description = "数据收集奖励",
+                            description = "Data Collection Reward",
                             fromAddress = transaction.fromAddress,
                             toAddress = address
                         )
@@ -140,7 +140,7 @@ class WalletRepository(
     }
     
     /**
-     * 检查是否有钱包
+     * Check if wallet exists
      */
     fun hasWallet(): Boolean {
         return walletManager.hasWallet()

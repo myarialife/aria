@@ -50,7 +50,7 @@ ARIA Token is currently in its foundational development phase. The core token co
 
 ```
 ┌──────────────┬──────────────────┬──────────────────┬──────────────────┬──────────────────┐
-│              │     2023年12月    │     Q1 2024      │     Q2 2024      │     Q3 2024      │
+│              │     December 2023    │     Q1 2024      │     Q2 2024      │     Q3 2024      │
 ├──────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┤
 │ Blockchain   │ ██████████████   │ ████████████     │ ██████████       │ ████████         │
 │ Development  │ Token Contract   │ Testnet Deploy   │ Mainnet Launch   │ Token Utility    │

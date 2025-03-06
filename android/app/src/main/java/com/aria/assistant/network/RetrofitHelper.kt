@@ -8,34 +8,47 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 /**
- * Retrofit帮助类 - 用于创建API服务实例
+ * Retrofit Helper - Creates API service instance
  */
 object RetrofitHelper {
     
-    private const val BASE_URL = "https://api.ariaassistant.io/v1/"
+    private const val BASE_URL = "https://api.aria.ai/v1/"
     private const val TIMEOUT = 30L
     
-    // 创建OkHttpClient
+    // Create OkHttpClient
     private val okHttpClient by lazy {
         val builder = OkHttpClient.Builder()
             .connectTimeout(TIMEOUT, TimeUnit.SECONDS)
             .readTimeout(TIMEOUT, TimeUnit.SECONDS)
             .writeTimeout(TIMEOUT, TimeUnit.SECONDS)
             
-        // 添加日志拦截器（仅在DEBUG模式下）
+        // Add logging interceptor (only in DEBUG mode)
         if (BuildConfig.DEBUG) {
-            val logging = HttpLoggingInterceptor()
-            logging.level = HttpLoggingInterceptor.Level.BODY
-            builder.addInterceptor(logging)
+            val loggingInterceptor = HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+            }
+            builder.addInterceptor(loggingInterceptor)
         }
         
-        // 添加认证拦截器
-        builder.addInterceptor(AuthInterceptor())
+        // Add auth interceptor
+        builder.addInterceptor { chain ->
+            val originalRequest = chain.request()
+            val requestBuilder = originalRequest.newBuilder()
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+            
+            // For authenticated requests, add token
+            // This could be managed by a TokenManager class
+            // requestBuilder.header("Authorization", "Bearer $token")
+            
+            val request = requestBuilder.build()
+            chain.proceed(request)
+        }
         
         builder.build()
     }
     
-    // 创建Retrofit实例
+    // Create Retrofit instance
     private val retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
@@ -44,7 +57,7 @@ object RetrofitHelper {
             .build()
     }
     
-    // 创建API服务
+    // Create API service
     val apiService: AriaApiService by lazy {
         retrofit.create(AriaApiService::class.java)
     }

@@ -14,7 +14,7 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
 /**
- * 数据收集仓库类
+ * Data Collection Repository
  */
 class DataRepository(
     private val context: Context,
@@ -27,22 +27,22 @@ class DataRepository(
         const val KEY_DATA_COLLECTION_ENABLED = "data_collection_enabled"
         const val KEY_PERMISSION_PREFIX = "permission_"
         
-        // 权限类型
+        // Permission types
         const val PERMISSION_LOCATION = "location"
         const val PERMISSION_CONTACTS = "contacts"
         const val PERMISSION_CALENDAR = "calendar"
         const val PERMISSION_SMS = "sms"
     }
     
-    // 数据收集状态
+    // Data collection status
     private val _dataCollectionEnabled = MutableLiveData<Boolean>()
     val dataCollectionEnabled: LiveData<Boolean> = _dataCollectionEnabled
     
-    // 总奖励金额
+    // Total reward amount
     private val _totalRewards = MutableLiveData<Double>()
     val totalRewards: LiveData<Double> = _totalRewards
     
-    // 已收集的数据计数
+    // Collected data count
     private val _collectedDataCount = MutableLiveData<Int>()
     val collectedDataCount: LiveData<Int> = _collectedDataCount
     
@@ -52,7 +52,7 @@ class DataRepository(
     }
     
     /**
-     * 加载数据收集状态
+     * Load data collection status
      */
     private fun loadDataCollectionStatus() {
         val isEnabled = prefs.getBoolean(KEY_DATA_COLLECTION_ENABLED, false)
@@ -60,7 +60,7 @@ class DataRepository(
     }
     
     /**
-     * 设置数据收集状态
+     * Set data collection status
      */
     fun setDataCollectionEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_DATA_COLLECTION_ENABLED, enabled).apply()
@@ -68,7 +68,7 @@ class DataRepository(
     }
     
     /**
-     * 刷新数据计数
+     * Refresh data count
      */
     suspend fun refreshDataCount() {
         withContext(Dispatchers.IO) {
@@ -78,7 +78,7 @@ class DataRepository(
     }
     
     /**
-     * 获取未同步的数据
+     * Get unsynced data
      */
     suspend fun getUnsyncedData(): List<CollectedData> {
         return withContext(Dispatchers.IO) {
@@ -87,7 +87,7 @@ class DataRepository(
     }
     
     /**
-     * 保存收集的数据
+     * Save collected data
      */
     suspend fun saveCollectedData(type: String, content: String) {
         withContext(Dispatchers.IO) {
@@ -103,7 +103,7 @@ class DataRepository(
     }
     
     /**
-     * 同步数据到服务器
+     * Sync data to server
      */
     suspend fun syncDataToServer(): Boolean {
         return withContext(Dispatchers.IO) {
@@ -132,7 +132,7 @@ class DataRepository(
                 val response = apiService.submitCollectedData(request)
                 
                 if (response.isSuccessful && response.body()?.success == true) {
-                    // 更新已同步的数据
+                    // Update synced data
                     response.body()?.data?.syncedData?.forEach { syncedItem ->
                         val localData = unsyncedData.find { it.id == syncedItem.id }
                         localData?.let {
@@ -147,7 +147,7 @@ class DataRepository(
                         }
                     }
                     
-                    // 更新总奖励
+                    // Update total rewards
                     loadTotalRewards()
                     return@withContext true
                 }
@@ -160,23 +160,23 @@ class DataRepository(
     }
     
     /**
-     * 加载总奖励
+     * Load total rewards
      */
     suspend fun loadTotalRewards() {
         withContext(Dispatchers.IO) {
             try {
-                // 尝试从API获取最新奖励信息
+                // Try to get latest reward information from API
                 val statsResponse = apiService.getUserStats()
                 if (statsResponse.isSuccessful && statsResponse.body()?.success == true) {
                     _totalRewards.postValue(statsResponse.body()?.data?.totalRewards ?: 0.0)
                 } else {
-                    // 如果API调用失败，回退到本地计算
+                    // If API call fails, fall back to local calculation
                     val localTotal = database.collectedDataDao().getTotalRewards() ?: 0.0
                     _totalRewards.postValue(localTotal)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                // 如果API调用异常，回退到本地计算
+                // If API call throws exception, fall back to local calculation
                 val localTotal = database.collectedDataDao().getTotalRewards() ?: 0.0
                 _totalRewards.postValue(localTotal)
             }
@@ -184,14 +184,14 @@ class DataRepository(
     }
     
     /**
-     * 设置数据权限
+     * Set data permission
      */
     suspend fun setDataPermission(permissionType: String, enabled: Boolean): Boolean {
-        // 保存本地权限设置
+        // Save local permission setting
         val prefKey = KEY_PERMISSION_PREFIX + permissionType
         prefs.edit().putBoolean(prefKey, enabled).apply()
         
-        // 同步到服务器
+        // Sync to server
         return withContext(Dispatchers.IO) {
             try {
                 val request = DataPermissionRequest(permissionType, enabled)
@@ -205,7 +205,7 @@ class DataRepository(
     }
     
     /**
-     * 获取数据权限
+     * Get data permission
      */
     fun getDataPermission(permissionType: String): Boolean {
         val prefKey = KEY_PERMISSION_PREFIX + permissionType

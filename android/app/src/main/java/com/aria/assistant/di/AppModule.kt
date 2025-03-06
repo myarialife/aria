@@ -14,14 +14,14 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 /**
- * 应用依赖注入模块 - 提供各种单例
+ * Application Dependency Injection Module - Provides various singletons
  */
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
     
     /**
-     * 提供API服务
+     * Provide API service
      */
     @Provides
     @Singleton
@@ -30,7 +30,7 @@ object AppModule {
     }
     
     /**
-     * 提供数据库
+     * Provide database
      */
     @Provides
     @Singleton
@@ -39,7 +39,7 @@ object AppModule {
     }
     
     /**
-     * 提供钱包仓库
+     * Provide wallet repository
      */
     @Provides
     @Singleton
@@ -51,7 +51,7 @@ object AppModule {
     }
     
     /**
-     * 提供数据仓库
+     * Provide data repository
      */
     @Provides
     @Singleton

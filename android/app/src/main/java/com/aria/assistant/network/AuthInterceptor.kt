@@ -7,70 +7,72 @@ import okhttp3.Interceptor
 import okhttp3.Response
 
 /**
- * 认证拦截器 - 为所有请求添加认证令牌
+ * Authentication Interceptor - Adds authentication token to all requests
  */
-class AuthInterceptor : Interceptor {
+class AuthInterceptor(private val context: Context? = null) : Interceptor {
+    
+    private val prefs: SharedPreferences? = context?.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
     
     companion object {
-        private const val AUTH_HEADER = "Authorization"
-        private const val TOKEN_KEY = "auth_token"
-        private const val PREFS_NAME = "aria_prefs"
+        private const val PREF_NAME = "aria_auth"
+        private const val KEY_TOKEN = "auth_token"
         
         /**
-         * 保存令牌
+         * Save token
          */
-        fun saveToken(token: String) {
-            val context = AriaApplication.getInstance()
-            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            prefs.edit().putString(TOKEN_KEY, token).apply()
+        fun saveToken(context: Context, token: String) {
+            context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .putString(KEY_TOKEN, token)
+                .apply()
         }
         
         /**
-         * 清除令牌
+         * Clear token
          */
-        fun clearToken() {
-            val context = AriaApplication.getInstance()
-            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            prefs.edit().remove(TOKEN_KEY).apply()
+        fun clearToken(context: Context) {
+            context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .remove(KEY_TOKEN)
+                .apply()
         }
         
         /**
-         * 获取令牌
+         * Get token
          */
-        fun getToken(): String? {
-            val context = AriaApplication.getInstance()
-            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            return prefs.getString(TOKEN_KEY, null)
+        fun getToken(context: Context): String? {
+            return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+                .getString(KEY_TOKEN, null)
         }
         
         /**
-         * 是否已认证
+         * Check if authenticated
          */
-        fun isAuthenticated(): Boolean {
-            return getToken() != null
+        fun isAuthenticated(context: Context): Boolean {
+            return getToken(context) != null
         }
     }
     
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
+        val requestUrl = request.url.toString()
         
-        // 检查请求URL是否包含登录或注册路径（这些不需要令牌）
-        val url = request.url.toString()
-        if (url.contains("/login") || url.contains("/register")) {
+        // Check if request URL contains login or registration paths (these don't need a token)
+        if (requestUrl.contains("/auth/login") || requestUrl.contains("/auth/register")) {
             return chain.proceed(request)
         }
         
-        // 获取认证令牌
-        val token = getToken()
+        // Get authentication token
+        val authToken = prefs?.getString(KEY_TOKEN, null)
         
-        // 如果有令牌，则添加到请求头
-        return if (token != null) {
-            val newRequest = request.newBuilder()
-                .header(AUTH_HEADER, "Bearer $token")
+        // If token exists, add it to request header
+        return if (!authToken.isNullOrEmpty()) {
+            val authenticatedRequest = request.newBuilder()
+                .header("Authorization", "Bearer $authToken")
                 .build()
-            chain.proceed(newRequest)
+            chain.proceed(authenticatedRequest)
         } else {
-            // 如果没有令牌，则继续原始请求
+            // If no token, proceed with original request
             chain.proceed(request)
         }
     }

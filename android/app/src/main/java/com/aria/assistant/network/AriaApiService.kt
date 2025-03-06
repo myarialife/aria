@@ -4,6 +4,12 @@ import com.aria.assistant.network.models.ApiResponse
 import com.aria.assistant.network.models.AssistantResponse
 import com.aria.assistant.network.models.CollectedDataResponse
 import com.aria.assistant.network.models.UserStatsResponse
+import com.aria.assistant.network.models.DataPermissionRequest
+import com.aria.assistant.network.models.LoginRequest
+import com.aria.assistant.network.models.RegisterRequest
+import com.aria.assistant.network.models.SubmitDataRequest
+import com.aria.assistant.network.models.TokenRewardRequest
+import com.aria.assistant.network.models.walletinfo.WalletInfoResponse
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Response
@@ -12,82 +18,99 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 import java.util.concurrent.TimeUnit
 
 /**
- * Aria API服务接口
+ * ARIA API Service Interface
  */
 interface AriaApiService {
     
     /**
-     * 用户登录
+     * User login
      */
     @POST("auth/login")
     suspend fun login(
-        @Body credentials: Map<String, String>
-    ): Response<ApiResponse<String>> // 返回JWT token
+        @Body loginRequest: LoginRequest
+    ): Response<ApiResponse<String>> // Returns JWT token
     
     /**
-     * 用户注册
+     * User registration
      */
     @POST("auth/register")
     suspend fun register(
-        @Body userData: Map<String, String>
-    ): Response<ApiResponse<String>> // 返回JWT token
+        @Body registerRequest: RegisterRequest
+    ): Response<ApiResponse<String>> // Returns JWT token
     
     /**
-     * 获取用户统计信息
+     * Get user profile
      */
-    @GET("user/stats")
-    suspend fun getUserStats(): Response<UserStatsResponse>
+    @GET("users/profile")
+    suspend fun getUserProfile(): Response<ApiResponse<Any>>
     
     /**
-     * 更新数据权限
+     * Get user statistics
      */
-    @POST("data/permissions")
-    suspend fun updateDataPermissions(
-        @Body permissions: Map<String, Boolean>
-    ): Response<ApiResponse<Boolean>>
+    @GET("users/stats")
+    suspend fun getUserStats(): Response<ApiResponse<Any>>
     
     /**
-     * 提交收集的数据
+     * Submit collected data
      */
     @POST("data/submit")
     suspend fun submitCollectedData(
-        @Body data: Map<String, Any>
-    ): Response<CollectedDataResponse>
+        @Body submitDataRequest: SubmitDataRequest
+    ): Response<ApiResponse<Any>>
     
     /**
-     * 获取AI助手回复
+     * Update data permissions
      */
-    @POST("assistant/query")
-    suspend fun getAssistantResponse(
-        @Body query: Map<String, String>
-    ): Response<AssistantResponse>
+    @PUT("data/permissions")
+    suspend fun updateDataPermissions(
+        @Body permissionRequest: DataPermissionRequest
+    ): Response<ApiResponse<Boolean>>
     
     /**
-     * 获取钱包信息
+     * Get wallet information
      */
-    @GET("wallet/{address}")
+    @GET("wallet/info/{address}")
     suspend fun getWalletInfo(
         @Path("address") address: String
-    ): Response<ApiResponse<Map<String, Any>>>
+    ): Response<ApiResponse<WalletInfoResponse>>
     
     /**
-     * 请求代币奖励
+     * Request token reward
      */
     @POST("wallet/reward")
     suspend fun requestTokenReward(
-        @Body request: Map<String, Any>
-    ): Response<ApiResponse<Map<String, Any>>>
+        @Body request: TokenRewardRequest
+    ): Response<ApiResponse<Any>>
+    
+    /**
+     * Get assistant response
+     */
+    @POST("assistant/ask")
+    suspend fun askAssistant(
+        @Body question: Map<String, String>
+    ): Response<ApiResponse<Any>>
+    
+    /**
+     * Get learning resources
+     */
+    @GET("content/learning")
+    suspend fun getLearningResources(
+        @Query("category") category: String? = null,
+        @Query("limit") limit: Int = 10,
+        @Query("offset") offset: Int = 0
+    ): Response<ApiResponse<Any>>
     
     companion object {
         private const val BASE_URL = "https://api.ariaassistant.com/v1/"
         
         /**
-         * 创建API服务实例
+         * Create API service instance
          */
         fun create(): AriaApiService {
             val logger = HttpLoggingInterceptor().apply { 

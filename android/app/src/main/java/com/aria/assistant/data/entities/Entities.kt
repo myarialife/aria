@@ -9,7 +9,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
 /**
- * 助手会话实体
+ * Assistant Conversation Entity
  */
 @Entity(tableName = "assistant_conversations")
 data class AssistantConversation(
@@ -20,7 +20,7 @@ data class AssistantConversation(
 )
 
 /**
- * 助手消息实体
+ * Assistant Message Entity
  */
 @Entity(
     tableName = "assistant_messages",
@@ -43,7 +43,7 @@ data class AssistantMessage(
 )
 
 /**
- * 收集的数据实体
+ * Collected Data Entity
  */
 @Entity(tableName = "collected_data")
 data class CollectedData(
@@ -57,7 +57,7 @@ data class CollectedData(
 )
 
 /**
- * 钱包交易记录实体
+ * Wallet Transaction Entity
  */
 @Entity(tableName = "wallet_transactions")
 data class WalletTransaction(
@@ -72,7 +72,7 @@ data class WalletTransaction(
 )
 
 /**
- * 带消息的会话
+ * Conversation With Messages
  */
 data class ConversationWithMessages(
     val conversation: AssistantConversation,
@@ -80,7 +80,7 @@ data class ConversationWithMessages(
 )
 
 /**
- * 类型转换器
+ * Type Converters
  */
 class Converters {
     @TypeConverter
